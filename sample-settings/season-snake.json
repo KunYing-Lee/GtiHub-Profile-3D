@@ -1,0 +1,52 @@
+{
+  "type": "season",
+  "fileName": "profile-season-snake.svg",
+  "backgroundColor": "#ffffff",
+  "foregroundColor": "#00000f",
+  "strongColor": "#111133",
+  "weakColor": "gray",
+  "radarColor": "#47a042",
+  "growingAnimation": true,
+  "contribColors1": [
+    "#efefef",
+    "#ffe7ff",
+    "#edaeda",
+    "#e492ca",
+    "#ba7aad"
+  ],
+  "contribColors2": [
+    "#efefef",
+    "#d8e887",
+    "#8cc569",
+    "#47a042",
+    "#1d6a23"
+  ],
+  "contribColors3": [
+    "#efefef",
+    "#ffed4a",
+    "#ffc402",
+    "#fe9400",
+    "#fa6100"
+  ],
+  "contribColors4": [
+    "#efefef",
+    "#999999",
+    "#cccccc",
+    "#dddddd",
+    "#eeeeee"
+  ],
+  "snakeAnimation": {
+    "enabled": true,
+    "pathMode": "snk",
+    "solverSnakeLength": 4,
+    "duration": "18s",
+    "eatDuration": "0.35s",
+    "segmentCount": 11,
+    "segmentGap": 1,
+    "segmentScale": 0.38,
+    "headColor": "#5b21b6",
+    "bodyColor": "#8b5cf6",
+    "eyeColor": "#ffffff",
+    "shadowColor": "rgba(76, 29, 149, 0.18)"
+  }
+}
