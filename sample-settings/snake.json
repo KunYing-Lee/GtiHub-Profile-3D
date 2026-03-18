@@ -14,13 +14,13 @@
     "solverSnakeLength": 4,
     "duration": "18s",
     "eatDuration": "0.35s",
-    "segmentCount": 9,
-    "segmentGap": 2,
-    "segmentScale": 0.3,
-    "headColor": "#111133",
-    "bodyColor": "#47a042",
+    "segmentCount": 11,
+    "segmentGap": 1,
+    "segmentScale": 0.38,
+    "headColor": "#5b21b6",
+    "bodyColor": "#8b5cf6",
     "eyeColor": "#ffffff",
-    "shadowColor": "rgba(0, 0, 0, 0.16)"
+    "shadowColor": "rgba(76, 29, 149, 0.18)"
   },
   "darkMode": {
     "type": "normal",
@@ -32,10 +32,10 @@
     "contribColors": ["#444444", "#1B7D28", "#24A736", "#2DD143", "#57DA69"],
     "snakeAnimation": {
       "enabled": true,
-      "headColor": "rgb(255,200,55)",
-      "bodyColor": "#57DA69",
+      "headColor": "#c4b5fd",
+      "bodyColor": "#8b5cf6",
       "eyeColor": "#00000f",
-      "shadowColor": "rgba(0, 0, 0, 0.24)"
+      "shadowColor": "rgba(15, 11, 32, 0.3)"
     }
   }
 }
