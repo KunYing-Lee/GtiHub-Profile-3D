@@ -8,6 +8,10 @@ const DARKER_RIGHT = 1;
 const DARKER_LEFT = 0.5;
 const DARKER_TOP = 0;
 const BASE_TILE_HEIGHT = 3;
+const SNAKE_LAYOUT_TOP_MARGIN = 24;
+const SNAKE_LAYOUT_MAX_OFFSET_Y = 180;
+const SNAKE_LAYOUT_BOTTOM_LIMIT = 500;
+const SNAKE_LAYOUT_MIN_WEEK_RATIO = 0.32;
 
 const toEpochDays = (date: Date): number =>
     Math.floor(date.getTime() / (24 * 60 * 60 * 1000));
@@ -291,6 +295,7 @@ const createGeometries = (
     userInfo: type.UserInfo,
     width: number,
     height: number,
+    settings: type.FullSettings,
 ): { cells: snake.ContributionGeometry[]; dxx: number; dyy: number } => {
     const firstDate = userInfo.contributionCalendar[0].date;
     const sundayOfFirstWeek = toEpochDays(firstDate) - firstDate.getUTCDay();
@@ -302,16 +307,41 @@ const createGeometries = (
     const dxx = dx * 0.9;
     const dyy = dy * 0.9;
     const offsetX = dx * 7;
-    const offsetY = height - (weekcount + 7) * dy;
+    const calHeights = userInfo.contributionCalendar.map(
+        (cal) => Math.log10(cal.contributionCount / 20 + 1) * 144 + 3,
+    );
+    const maxCalHeight = calHeights.reduce(
+        (currentMax, calHeight) => Math.max(currentMax, calHeight),
+        BASE_TILE_HEIGHT,
+    );
+    const defaultOffsetY = height - (weekcount + 7) * dy;
 
-    const cells = userInfo.contributionCalendar.map((cal) => {
+    let offsetY = defaultOffsetY;
+    let weekYRatio = 1;
+
+    if (settings.snakeAnimation?.enabled) {
+        offsetY = Math.min(
+            maxCalHeight + SNAKE_LAYOUT_TOP_MARGIN,
+            SNAKE_LAYOUT_MAX_OFFSET_Y,
+        );
+
+        const availableWeekHeight =
+            SNAKE_LAYOUT_BOTTOM_LIMIT - offsetY - 6 * dy;
+        const maxWeekSpan = Math.max(1, (weekcount - 1) * dy);
+        weekYRatio = Math.max(
+            SNAKE_LAYOUT_MIN_WEEK_RATIO,
+            Math.min(1, availableWeekHeight / maxWeekSpan),
+        );
+    }
+
+    const cells = userInfo.contributionCalendar.map((cal, index) => {
         const week = Math.floor(
             (toEpochDays(cal.date) - sundayOfFirstWeek) / 7,
         );
         const dayOfWeek = cal.date.getUTCDay();
         const baseX = offsetX + (week - dayOfWeek) * dx;
-        const baseY = offsetY + (week + dayOfWeek) * dy;
-        const calHeight = Math.log10(cal.contributionCount / 20 + 1) * 144 + 3;
+        const baseY = offsetY + (week * weekYRatio + dayOfWeek) * dy;
+        const calHeight = calHeights[index];
 
         return {
             contributionCount: cal.contributionCount,
@@ -398,7 +428,12 @@ export const create3DContrib = (
         return;
     }
 
-    const { cells, dxx, dyy } = createGeometries(userInfo, width, height);
+    const { cells, dxx, dyy } = createGeometries(
+        userInfo,
+        width,
+        height,
+        settings,
+    );
     const groundGroup = svg
         .append('g')
         .attr('class', 'contrib-ground')
