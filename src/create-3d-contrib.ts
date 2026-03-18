@@ -8,10 +8,8 @@ const DARKER_RIGHT = 1;
 const DARKER_LEFT = 0.5;
 const DARKER_TOP = 0;
 const BASE_TILE_HEIGHT = 3;
-const SNAKE_LAYOUT_TOP_MARGIN = 24;
+const SNAKE_LAYOUT_TOP_MARGIN = 64;
 const SNAKE_LAYOUT_MAX_OFFSET_Y = 180;
-const SNAKE_LAYOUT_BOTTOM_LIMIT = 500;
-const SNAKE_LAYOUT_MIN_WEEK_RATIO = 0.32;
 
 const toEpochDays = (date: Date): number =>
     Math.floor(date.getTime() / (24 * 60 * 60 * 1000));
@@ -317,20 +315,11 @@ const createGeometries = (
     const defaultOffsetY = height - (weekcount + 7) * dy;
 
     let offsetY = defaultOffsetY;
-    let weekYRatio = 1;
 
     if (settings.snakeAnimation?.enabled) {
         offsetY = Math.min(
             maxCalHeight + SNAKE_LAYOUT_TOP_MARGIN,
             SNAKE_LAYOUT_MAX_OFFSET_Y,
-        );
-
-        const availableWeekHeight =
-            SNAKE_LAYOUT_BOTTOM_LIMIT - offsetY - 6 * dy;
-        const maxWeekSpan = Math.max(1, (weekcount - 1) * dy);
-        weekYRatio = Math.max(
-            SNAKE_LAYOUT_MIN_WEEK_RATIO,
-            Math.min(1, availableWeekHeight / maxWeekSpan),
         );
     }
 
@@ -340,7 +329,7 @@ const createGeometries = (
         );
         const dayOfWeek = cal.date.getUTCDay();
         const baseX = offsetX + (week - dayOfWeek) * dx;
-        const baseY = offsetY + (week * weekYRatio + dayOfWeek) * dy;
+        const baseY = offsetY + (week + dayOfWeek) * dy;
         const calHeight = calHeights[index];
 
         return {
