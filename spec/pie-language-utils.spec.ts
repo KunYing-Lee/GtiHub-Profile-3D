@@ -3,7 +3,7 @@ import { buildPieLanguages } from '../src/pie-language-utils';
 import { dummyData } from './dummy-data';
 
 describe('pie-language-utils', () => {
-    it('shows the top 8 languages and groups the rest as other', () => {
+    it('shows the top 8 languages and groups remaining contributions as other', () => {
         const userInfo = aggregate.aggregateUserInfo(dummyData);
         const languages = buildPieLanguages(userInfo);
 
@@ -18,6 +18,6 @@ describe('pie-language-utils', () => {
             'JavaScript',
             'other',
         ]);
-        expect(languages[languages.length - 1].contributions).toEqual(9);
+        expect(languages[languages.length - 1].contributions).toEqual(31);
     });
 });

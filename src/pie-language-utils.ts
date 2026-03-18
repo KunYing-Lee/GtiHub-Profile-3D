@@ -11,7 +11,7 @@ export const buildPieLanguages = (
     const sumContrib = languages
         .map((lang) => lang.contributions)
         .reduce((a, b) => a + b, 0);
-    const otherContributions = userInfo.totalCommitContributions - sumContrib;
+    const otherContributions = userInfo.totalContributions - sumContrib;
 
     if (0 < otherContributions) {
         languages.push({
