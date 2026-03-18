@@ -8,60 +8,8 @@ describe('github-graphql', () => {
         const userInfo = aggregate.aggregateUserInfo(dummyData);
 
         expect(userInfo.contributionCalendar.length).toEqual(371);
-
-        const languages: Array<type.LangInfo> = [
-            {
-                "language": "Jupyter Notebook",
-                "color": "#DA5B0B",
-                "contributions": 108
-            },
-            {
-                "language": "Perl",
-                "color": "#0298c3",
-                "contributions": 73
-            },
-            {
-                "language": "Kotlin",
-                "color": "#F18E33",
-                "contributions": 58
-            },
-            {
-                "language": "TypeScript",
-                "color": "#2b7489",
-                "contributions": 31
-            },
-            {
-                "language": "Java",
-                "color": "#b07219",
-                "contributions": 28
-            },
-            {
-                "language": "Go",
-                "color": "#00ADD8",
-                "contributions": 20
-            },
-            {
-                "language": "Python",
-                "color": "#3572A5",
-                "contributions": 10
-            },
-            {
-                "language": "JavaScript",
-                "color": "#f1e05a",
-                "contributions": 7
-            },
-            {
-                "language": "C",
-                "color": "#555555",
-                "contributions": 4
-            },
-            {
-                "language": "Ruby",
-                "color": "#701516",
-                "contributions": 1
-            }
-        ];
-        expect(userInfo.contributesLanguage).toEqual(languages);
+        expect(userInfo.contributesLanguage).toEqual([]);
+        expect(userInfo.totalLanguageSize).toEqual(0);
 
         expect(userInfo.totalContributions).toEqual(366);
         expect(userInfo.totalCommitContributions).toEqual(344);
@@ -73,7 +21,7 @@ describe('github-graphql', () => {
         expect(userInfo.totalStargazerCount).toEqual(6);
     });
 
-    it('distributes repository commit contributions across repository languages', () => {
+    it('aggregates repository language sizes across all repositories', () => {
         const response = {
             data: {
                 user: {
@@ -83,49 +31,7 @@ describe('github-graphql', () => {
                             totalContributions: 12,
                             weeks: [],
                         },
-                        commitContributionsByRepository: [
-                            {
-                                repository: {
-                                    primaryLanguage: {
-                                        name: 'TypeScript',
-                                        color: '#3178c6',
-                                    },
-                                    languages: {
-                                        totalSize: 100,
-                                        edges: [
-                                            {
-                                                size: 70,
-                                                node: {
-                                                    name: 'TypeScript',
-                                                    color: '#3178c6',
-                                                },
-                                            },
-                                            {
-                                                size: 30,
-                                                node: {
-                                                    name: 'Python',
-                                                    color: '#3572A5',
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                                contributions: {
-                                    totalCount: 10,
-                                },
-                            },
-                            {
-                                repository: {
-                                    primaryLanguage: {
-                                        name: 'Go',
-                                        color: '#00ADD8',
-                                    },
-                                },
-                                contributions: {
-                                    totalCount: 2,
-                                },
-                            },
-                        ],
+                        commitContributionsByRepository: [],
                         totalCommitContributions: 12,
                         totalIssueContributions: 0,
                         totalPullRequestContributions: 0,
@@ -134,7 +40,54 @@ describe('github-graphql', () => {
                     },
                     repositories: {
                         edges: [],
-                        nodes: [],
+                        nodes: [
+                            {
+                                forkCount: 0,
+                                stargazerCount: 0,
+                                languages: {
+                                    totalSize: 100,
+                                    edges: [
+                                        {
+                                            size: 70,
+                                            node: {
+                                                name: 'TypeScript',
+                                                color: '#3178c6',
+                                            },
+                                        },
+                                        {
+                                            size: 30,
+                                            node: {
+                                                name: 'Python',
+                                                color: '#3572A5',
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                            {
+                                forkCount: 0,
+                                stargazerCount: 0,
+                                languages: {
+                                    totalSize: 50,
+                                    edges: [
+                                        {
+                                            size: 25,
+                                            node: {
+                                                name: 'TypeScript',
+                                                color: '#3178c6',
+                                            },
+                                        },
+                                        {
+                                            size: 25,
+                                            node: {
+                                                name: 'Go',
+                                                color: '#00ADD8',
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        ],
                     },
                 },
             },
@@ -146,18 +99,19 @@ describe('github-graphql', () => {
             {
                 language: 'TypeScript',
                 color: '#3178c6',
-                contributions: 7,
+                contributions: 95,
             },
             {
                 language: 'Python',
                 color: '#3572A5',
-                contributions: 3,
+                contributions: 30,
             },
             {
                 language: 'Go',
                 color: '#00ADD8',
-                contributions: 2,
+                contributions: 25,
             },
         ]);
+        expect(userInfo.totalLanguageSize).toEqual(150);
     });
 });

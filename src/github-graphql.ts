@@ -4,7 +4,7 @@ import * as type from './type';
 export const URL =
     process.env.GITHUB_ENDPOINT || 'https://api.github.com/graphql';
 const maxReposOneQuery = 100;
-const maxLanguagesOneRepo = 10;
+const maxLanguagesOneRepo = 20;
 
 export type RepositoryLanguages = {
     totalSize: number;
@@ -52,6 +52,7 @@ export type Repositories = {
     nodes: Array<{
         forkCount: number;
         stargazerCount: number;
+        languages?: RepositoryLanguages | null;
     }>;
 };
 
@@ -127,16 +128,6 @@ export const fetchFirst = async (
                                     name
                                     color
                                 }
-                                languages(first: ${maxLanguagesOneRepo}, orderBy: {field: SIZE, direction: DESC}) {
-                                    totalSize
-                                    edges {
-                                        size
-                                        node {
-                                            name
-                                            color
-                                        }
-                                    }
-                                }
                             }
                             contributions {
                                 totalCount
@@ -155,6 +146,16 @@ export const fetchFirst = async (
                         nodes {
                             forkCount
                             stargazerCount
+                            languages(first: ${maxLanguagesOneRepo}, orderBy: {field: SIZE, direction: DESC}) {
+                                totalSize
+                                edges {
+                                    size
+                                    node {
+                                        name
+                                        color
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -188,6 +189,16 @@ export const fetchNext = async (
                         nodes {
                             forkCount
                             stargazerCount
+                            languages(first: ${maxLanguagesOneRepo}, orderBy: {field: SIZE, direction: DESC}) {
+                                totalSize
+                                edges {
+                                    size
+                                    node {
+                                        name
+                                        color
+                                    }
+                                }
+                            }
                         }
                     }
                 }

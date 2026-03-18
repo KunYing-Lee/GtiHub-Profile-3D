@@ -14,6 +14,7 @@ export interface UserInfo {
     isHalloween: boolean;
     contributionCalendar: Array<CalendarInfo>;
     contributesLanguage: Array<LangInfo>;
+    totalLanguageSize: number;
     totalContributions: number;
     totalCommitContributions: number;
     totalIssueContributions: number;

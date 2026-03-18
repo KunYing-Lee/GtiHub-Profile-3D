@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import { buildPieLanguages } from './pie-language-utils';
 import * as type from './type';
+import * as util from './utils';
 
 const MIN_LABEL_ROWS = 8;
 
@@ -19,6 +20,9 @@ export const createPieLanguage = (
     }
 
     const languages = buildPieLanguages(userInfo);
+    if (languages.length === 0) {
+        return;
+    }
 
     const isAnimate = settings.growingAnimation || isForcedAnimation;
     const animeSteps = 5;
@@ -40,6 +44,9 @@ export const createPieLanguage = (
         .value((d) => d.contributions)
         .sortValues(null);
     const pieData = pie(languages);
+    const totalLanguageSize = languages
+        .map((lang) => lang.contributions)
+        .reduce((a, b) => a + b, 0);
 
     const group = svg.append('g').attr('transform', `translate(${x}, ${y})`);
 
@@ -109,7 +116,12 @@ export const createPieLanguage = (
         .attr('stroke-width', '2px');
     paths
         .append('title')
-        .text((d) => `${d.data.language} ${d.data.contributions}`);
+        .text(
+            (d) =>
+                `${d.data.language} ${util.toFixed(
+                    (d.data.contributions / totalLanguageSize) * 100,
+                )}%`,
+        );
     if (isAnimate) {
         paths
             .append('animate')
