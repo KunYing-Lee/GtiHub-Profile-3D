@@ -78,7 +78,9 @@ jobs:
       - name: Generate season-snake SVG
         uses: KunYing-Lee/github-profile-3d-contrib@main
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Use a PAT with access to your private repositories and `read:user`.
+          # Also enable "Include private contributions on my profile" in GitHub profile settings.
+          GITHUB_TOKEN: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
           USERNAME: ${{ github.repository_owner }}
           SETTING_JSON: conf/season-snake.json
 
