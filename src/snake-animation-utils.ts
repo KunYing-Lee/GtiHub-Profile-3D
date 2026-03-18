@@ -15,6 +15,8 @@ export interface NormalizedSnakeAnimationSettings {
     durationMs: number;
     eatDurationFraction: number;
     repeatCount: string;
+    pathMode: 'snk' | 'serpentine';
+    solverSnakeLength: number;
     segmentCount: number;
     segmentGap: number;
     segmentScale: number;
@@ -74,13 +76,20 @@ export const normalizeSnakeAnimationSettings = (
             0.25,
         ),
         repeatCount: snake.repeatCount || DEFAULT_REPEAT_COUNT,
+        pathMode: snake.pathMode || 'snk',
+        solverSnakeLength: Math.max(
+            3,
+            Math.min(6, snake.solverSnakeLength || 4),
+        ),
         segmentCount: Math.max(4, Math.min(24, snake.segmentCount || 8)),
         segmentGap: Math.max(1, Math.min(8, snake.segmentGap || 2)),
         segmentScale: Math.max(0.18, Math.min(0.45, snake.segmentScale || 0.3)),
     };
 };
 
-export const buildSnakeRoute = <T extends SnakeRouteCell>(cells: T[]): T[] => {
+export const buildSerpentineSnakeRoute = <T extends SnakeRouteCell>(
+    cells: T[],
+): T[] => {
     if (cells.length < 2) {
         return [];
     }

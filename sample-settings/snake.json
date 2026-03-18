@@ -10,6 +10,8 @@
   "contribColors": ["#efefef", "#d8e887", "#8cc569", "#47a042", "#1d6a23"],
   "snakeAnimation": {
     "enabled": true,
+    "pathMode": "snk",
+    "solverSnakeLength": 4,
     "duration": "18s",
     "eatDuration": "0.35s",
     "segmentCount": 9,

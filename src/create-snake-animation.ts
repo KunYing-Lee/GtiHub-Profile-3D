@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
+import { buildSnkSnakeRoute } from './snk-solver';
 import {
-    buildSnakeRoute,
+    buildSerpentineSnakeRoute,
     normalizeSnakeAnimationSettings,
 } from './snake-animation-utils';
 import type { NormalizedSnakeAnimationSettings } from './snake-animation-utils';
@@ -36,6 +37,13 @@ export interface AnimatedContributionBar {
     scaleRight: number;
 }
 
+interface SnakeAnimationPoint {
+    week: number;
+    dayOfWeek: number;
+    groundX: number;
+    groundY: number;
+}
+
 const toKey = (week: number, dayOfWeek: number): string =>
     `${week}:${dayOfWeek}`;
 
@@ -55,7 +63,7 @@ const buildKeyTimes = (routeLength: number): string =>
         .join(';');
 
 const buildCoordinateValues = (
-    route: ContributionGeometry[],
+    route: SnakeAnimationPoint[],
     segmentOffset: number,
     attribute: 'groundX' | 'groundY',
     delta = 0,
@@ -93,7 +101,7 @@ const animateAttribute = (
 
 const addSnakeSegment = (
     group: SvgGroupSelection,
-    route: ContributionGeometry[],
+    route: SnakeAnimationPoint[],
     keyTimes: string,
     settings: NormalizedSnakeAnimationSettings,
     segmentIndex: number,
@@ -192,7 +200,7 @@ const addSnakeSegment = (
 
 const addSnakeBody = (
     group: SvgGroupSelection,
-    route: ContributionGeometry[],
+    route: SnakeAnimationPoint[],
     settings: NormalizedSnakeAnimationSettings,
     tileWidth: number,
     tileHeight: number,
@@ -221,7 +229,7 @@ const addSnakeBody = (
 
 const addEatAnimations = (
     bars: AnimatedContributionBar[],
-    route: ContributionGeometry[],
+    route: SnakeAnimationPoint[],
     settings: NormalizedSnakeAnimationSettings,
 ): void => {
     if (route.length === 0 || bars.length === 0) {
@@ -318,6 +326,74 @@ const addEatAnimations = (
     });
 };
 
+const createRouteProjector = (
+    cells: ContributionGeometry[],
+    tileWidth: number,
+    tileHeight: number,
+): ((week: number, dayOfWeek: number) => SnakeAnimationPoint) | null => {
+    const anchor = cells[0];
+    if (!anchor) {
+        return null;
+    }
+
+    const dx = tileWidth / 0.9;
+    const dy = tileHeight / 0.9;
+    const offsetX =
+        anchor.groundX - tileWidth / 2 - (anchor.week - anchor.dayOfWeek) * dx;
+    const offsetY =
+        anchor.groundY -
+        (anchor.week + anchor.dayOfWeek) * dy +
+        BASE_TILE_HEIGHT -
+        tileHeight;
+
+    return (week: number, dayOfWeek: number): SnakeAnimationPoint => {
+        const baseX = offsetX + (week - dayOfWeek) * dx;
+        const baseY = offsetY + (week + dayOfWeek) * dy;
+
+        return {
+            week,
+            dayOfWeek,
+            groundX: baseX + tileWidth / 2,
+            groundY: baseY - BASE_TILE_HEIGHT + tileHeight,
+        };
+    };
+};
+
+const buildAnimationRoute = (
+    cells: ContributionGeometry[],
+    settings: NormalizedSnakeAnimationSettings,
+    tileWidth: number,
+    tileHeight: number,
+): SnakeAnimationPoint[] => {
+    const project = createRouteProjector(cells, tileWidth, tileHeight);
+    if (!project) {
+        return [];
+    }
+
+    const rawRoute =
+        settings.pathMode === 'serpentine'
+            ? buildSerpentineSnakeRoute(cells)
+            : buildSnkSnakeRoute(cells, settings.solverSnakeLength).map(
+                  (point) => ({
+                      week: point.x,
+                      dayOfWeek: point.y,
+                  }),
+              );
+
+    const route =
+        2 <= rawRoute.length
+            ? rawRoute.map((point) => project(point.week, point.dayOfWeek))
+            : [];
+
+    if (2 <= route.length || settings.pathMode === 'serpentine') {
+        return route;
+    }
+
+    return buildSerpentineSnakeRoute(cells).map((point) =>
+        project(point.week, point.dayOfWeek),
+    );
+};
+
 export const addSnakeAnimation = (
     group: SvgGroupSelection,
     cells: ContributionGeometry[],
@@ -335,7 +411,12 @@ export const addSnakeAnimation = (
         return;
     }
 
-    const route = buildSnakeRoute(cells);
+    const route = buildAnimationRoute(
+        cells,
+        snakeSettings,
+        tileWidth,
+        tileHeight,
+    );
     if (route.length < 2) {
         return;
     }

@@ -65,6 +65,8 @@ export interface SnakeAnimationSettings {
     startDelay?: string;
     repeatCount?: string;
     eatDuration?: string;
+    pathMode?: 'snk' | 'serpentine';
+    solverSnakeLength?: number;
     segmentCount?: number;
     segmentGap?: number;
     segmentScale?: number;

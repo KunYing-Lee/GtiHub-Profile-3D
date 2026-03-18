@@ -8,7 +8,7 @@ const DARKER_RIGHT = 1;
 const DARKER_LEFT = 0.5;
 const DARKER_TOP = 0;
 const BASE_TILE_HEIGHT = 3;
-const SNAKE_LAYOUT_TOP_MARGIN = 64;
+const SNAKE_LAYOUT_TOP_MARGIN = 80;
 const SNAKE_LAYOUT_MAX_OFFSET_Y = 180;
 
 const toEpochDays = (date: Date): number =>

@@ -134,6 +134,8 @@ The `snakeAnimation` block is optional and currently supports:
 - `duration`: how long the snake takes to complete one loop.
 - `startDelay`: optional delay before the snake starts. When omitted, animated builds wait for the 3D growth animation to finish.
 - `eatDuration`: how quickly each bar collapses after the snake reaches it.
+- `pathMode`: `snk` for solver-driven routing inspired by `Platane/snk`, or `serpentine` for the old simple sweep.
+- `solverSnakeLength`: snake length used by the `snk` solver. Keep it small for performance; `4` matches `snk`'s default action.
 - `segmentCount`: how many body segments the snake has.
 - `segmentGap`: how many grid steps to leave between segments.
 - `segmentScale`: how large the body is relative to a contribution tile.

@@ -1,5 +1,5 @@
 import {
-    buildSnakeRoute,
+    buildSerpentineSnakeRoute,
     normalizeSnakeAnimationSettings,
 } from '../src/snake-animation-utils';
 import * as type from '../src/type';
@@ -14,7 +14,7 @@ describe('snake-animation-utils', () => {
             })),
         );
 
-        const route = buildSnakeRoute(cells);
+        const route = buildSerpentineSnakeRoute(cells);
 
         expect(route.map((cell) => cell.key)).toEqual([
             '0:0',
@@ -75,6 +75,8 @@ describe('snake-animation-utils', () => {
             durationMs: 18000,
             eatDurationFraction: 350 / 18000,
             repeatCount: 'indefinite',
+            pathMode: 'snk',
+            solverSnakeLength: 4,
             segmentCount: 8,
             segmentGap: 2,
             segmentScale: 0.3,
