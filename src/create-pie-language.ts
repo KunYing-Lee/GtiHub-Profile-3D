@@ -1,8 +1,8 @@
 import * as d3 from 'd3';
+import { buildPieLanguages } from './pie-language-utils';
 import * as type from './type';
 
-const OTHER_NAME = 'other';
-const OTHER_COLOR = '#444444';
+const MIN_LABEL_ROWS = 8;
 
 export const createPieLanguage = (
     svg: d3.Selection<SVGSVGElement, unknown, null, unknown>,
@@ -18,18 +18,7 @@ export const createPieLanguage = (
         return;
     }
 
-    const languages = userInfo.contributesLanguage.slice(0, 5);
-    const sumContrib = languages
-        .map((lang) => lang.contributions)
-        .reduce((a, b) => a + b, 0);
-    const otherContributions = userInfo.totalCommitContributions - sumContrib;
-    if (0 < otherContributions) {
-        languages.push({
-            language: OTHER_NAME,
-            color: OTHER_COLOR,
-            contributions: otherContributions,
-        });
-    }
+    const languages = buildPieLanguages(userInfo);
 
     const isAnimate = settings.growingAnimation || isForcedAnimation;
     const animeSteps = 5;
@@ -42,7 +31,7 @@ export const createPieLanguage = (
     const radius = height / 2;
     const margin = radius / 10;
 
-    const row = 8;
+    const row = Math.max(MIN_LABEL_ROWS, languages.length);
     const offset = (row - languages.length) / 2 + 0.5;
     const fontSize = height / row / 1.5;
 
