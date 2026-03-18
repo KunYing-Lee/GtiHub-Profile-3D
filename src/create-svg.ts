@@ -97,6 +97,10 @@ export const createSvg = (
             isForcedAnimation,
         );
 
+        if (settings.chartLayout === 'contrib_only') {
+            return container.html();
+        }
+
         // radar chart
         radar.createRadarContrib(
             svg,

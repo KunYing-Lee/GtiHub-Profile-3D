@@ -83,6 +83,7 @@ export interface BaseSettings extends RadarContribSettings, PieLangSettings {
     strongColor: string;
     weakColor: string;
     radarColor: string;
+    chartLayout?: 'full' | 'contrib_only';
 
     growingAnimation?: boolean;
 

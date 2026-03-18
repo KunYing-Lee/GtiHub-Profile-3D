@@ -6,6 +6,7 @@
   "strongColor": "#111133",
   "weakColor": "gray",
   "radarColor": "#47a042",
+  "chartLayout": "contrib_only",
   "growingAnimation": true,
   "contribColors1": [
     "#efefef",
