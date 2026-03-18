@@ -26,7 +26,9 @@ export const toRadarLevel = (
     }
 
     return Math.min(
-        (value / getRadarScaleMax(totalContributions)) * RADAR_LEVELS,
+        // Use square-root scaling so low-count axes remain visible
+        // when the chart is normalized against total contributions.
+        Math.sqrt(value / getRadarScaleMax(totalContributions)) * RADAR_LEVELS,
         RADAR_LEVELS,
     );
 };

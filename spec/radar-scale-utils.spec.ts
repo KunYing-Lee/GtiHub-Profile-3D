@@ -17,8 +17,8 @@ describe('radar-scale-utils', () => {
 
     it('maps radar values against total contributions', () => {
         expect(getRadarScaleMax(194)).toEqual(194);
-        expect(toRadarLevel(16, 194)).toBeCloseTo(0.4124, 4);
-        expect(toRadarLevel(9, 194)).toBeCloseTo(0.232, 3);
+        expect(toRadarLevel(16, 194)).toBeCloseTo(1.436, 3);
+        expect(toRadarLevel(9, 194)).toBeCloseTo(1.077, 3);
         expect(toRadarLevel(194, 194)).toEqual(5);
         expect(toRadarLevel(0, 194)).toEqual(0);
     });
