@@ -1,3 +1,4 @@
+import * as client from '../src/github-graphql';
 import * as aggregate from '../src/aggregate-user-info'
 import * as type from '../src/type';
 import { dummyData } from './dummy-data';
@@ -70,5 +71,93 @@ describe('github-graphql', () => {
         expect(userInfo.totalRepositoryContributions).toEqual(6);
         expect(userInfo.totalForkCount).toEqual(0);
         expect(userInfo.totalStargazerCount).toEqual(6);
+    });
+
+    it('distributes repository commit contributions across repository languages', () => {
+        const response = {
+            data: {
+                user: {
+                    contributionsCollection: {
+                        contributionCalendar: {
+                            isHalloween: false,
+                            totalContributions: 12,
+                            weeks: [],
+                        },
+                        commitContributionsByRepository: [
+                            {
+                                repository: {
+                                    primaryLanguage: {
+                                        name: 'TypeScript',
+                                        color: '#3178c6',
+                                    },
+                                    languages: {
+                                        totalSize: 100,
+                                        edges: [
+                                            {
+                                                size: 70,
+                                                node: {
+                                                    name: 'TypeScript',
+                                                    color: '#3178c6',
+                                                },
+                                            },
+                                            {
+                                                size: 30,
+                                                node: {
+                                                    name: 'Python',
+                                                    color: '#3572A5',
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                                contributions: {
+                                    totalCount: 10,
+                                },
+                            },
+                            {
+                                repository: {
+                                    primaryLanguage: {
+                                        name: 'Go',
+                                        color: '#00ADD8',
+                                    },
+                                },
+                                contributions: {
+                                    totalCount: 2,
+                                },
+                            },
+                        ],
+                        totalCommitContributions: 12,
+                        totalIssueContributions: 0,
+                        totalPullRequestContributions: 0,
+                        totalPullRequestReviewContributions: 0,
+                        totalRepositoryContributions: 2,
+                    },
+                    repositories: {
+                        edges: [],
+                        nodes: [],
+                    },
+                },
+            },
+        } as client.ResponseType;
+
+        const userInfo = aggregate.aggregateUserInfo(response);
+
+        expect(userInfo.contributesLanguage).toEqual([
+            {
+                language: 'TypeScript',
+                color: '#3178c6',
+                contributions: 7,
+            },
+            {
+                language: 'Python',
+                color: '#3572A5',
+                contributions: 3,
+            },
+            {
+                language: 'Go',
+                color: '#00ADD8',
+                contributions: 2,
+            },
+        ]);
     });
 });

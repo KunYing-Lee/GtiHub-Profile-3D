@@ -28,6 +28,97 @@ const compare = (num1: number, num2: number): number => {
     }
 };
 
+const addLanguageContribution = (
+    contributesLanguage: { [language: string]: type.LangInfo },
+    language: string,
+    color: string | null,
+    contributions: number,
+): void => {
+    if (!language || contributions <= 0) {
+        return;
+    }
+
+    const info = contributesLanguage[language];
+    if (info) {
+        info.contributions += contributions;
+        return;
+    }
+
+    contributesLanguage[language] = {
+        language: language,
+        color: color || OTHER_COLOR,
+        contributions: contributions,
+    };
+};
+
+const getContributesLanguages = (
+    repo: client.CommitContributionsByRepository[number],
+): Array<type.LangInfo> => {
+    const totalCount = repo.contributions.totalCount;
+    const languages = repo.repository.languages;
+    const edges =
+        languages?.edges.filter((edge) => 0 < edge.size && edge.node.name) || [];
+    const totalSize = languages?.totalSize || 0;
+
+    if (0 < edges.length && 0 < totalSize) {
+        const weightedLanguages = edges.map((edge) => ({
+            language: edge.node.name,
+            color: edge.node.color || OTHER_COLOR,
+            rawContribution: (totalCount * edge.size) / totalSize,
+            fraction:
+                (totalCount * edge.size) / totalSize -
+                Math.floor((totalCount * edge.size) / totalSize),
+        }));
+        const visibleContributionCount = Math.min(
+            totalCount,
+            Math.round(
+                weightedLanguages.reduce(
+                    (sum, item) => sum + item.rawContribution,
+                    0,
+                ),
+            ),
+        );
+        const contributions = weightedLanguages.map((item) => ({
+            language: item.language,
+            color: item.color,
+            contributions: Math.floor(item.rawContribution),
+            fraction: item.fraction,
+        }));
+
+        let remains =
+            visibleContributionCount -
+            contributions.reduce((sum, item) => sum + item.contributions, 0);
+        contributions
+            .slice()
+            .sort((a, b) => -compare(a.fraction, b.fraction))
+            .slice(0, remains)
+            .forEach((item) => {
+                item.contributions += 1;
+                remains -= 1;
+            });
+
+        return contributions
+            .filter((item) => 0 < item.contributions)
+            .map((item) => ({
+                language: item.language,
+                color: item.color,
+                contributions: item.contributions,
+            }));
+    }
+
+    if (repo.repository.primaryLanguage) {
+        return [
+            {
+                language: repo.repository.primaryLanguage.name,
+                color: repo.repository.primaryLanguage.color || OTHER_COLOR,
+                contributions: totalCount,
+            },
+        ];
+    }
+
+    return [];
+};
+
 export const aggregateUserInfo = (
     response: client.ResponseType,
 ): type.UserInfo => {
@@ -51,22 +142,15 @@ export const aggregateUserInfo = (
         }));
     const contributesLanguage: { [language: string]: type.LangInfo } = {};
     user.contributionsCollection.commitContributionsByRepository
-        .filter((repo) => repo.repository.primaryLanguage)
         .forEach((repo) => {
-            const language = repo.repository.primaryLanguage?.name || '';
-            const color = repo.repository.primaryLanguage?.color || OTHER_COLOR;
-            const contributions = repo.contributions.totalCount;
-
-            const info = contributesLanguage[language];
-            if (info) {
-                info.contributions += contributions;
-            } else {
-                contributesLanguage[language] = {
-                    language: language,
-                    color: color,
-                    contributions: contributions,
-                };
-            }
+            getContributesLanguages(repo).forEach((languageInfo) => {
+                addLanguageContribution(
+                    contributesLanguage,
+                    languageInfo.language,
+                    languageInfo.color,
+                    languageInfo.contributions,
+                );
+            });
         });
     const languages: Array<type.LangInfo> = Object.values(
         contributesLanguage,

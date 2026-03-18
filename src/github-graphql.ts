@@ -4,6 +4,19 @@ import * as type from './type';
 export const URL =
     process.env.GITHUB_ENDPOINT || 'https://api.github.com/graphql';
 const maxReposOneQuery = 100;
+const maxLanguagesOneRepo = 10;
+
+export type RepositoryLanguages = {
+    totalSize: number;
+    edges: Array<{
+        size: number;
+        node: {
+            name: string;
+            /** "#RRGGBB" */
+            color: string | null;
+        };
+    }>;
+};
 
 export type CommitContributionsByRepository = Array<{
     contributions: {
@@ -15,6 +28,7 @@ export type CommitContributionsByRepository = Array<{
             /** "#RRGGBB" */
             color: string | null;
         } | null;
+        languages?: RepositoryLanguages | null;
     };
 }>;
 
@@ -112,6 +126,16 @@ export const fetchFirst = async (
                                 primaryLanguage {
                                     name
                                     color
+                                }
+                                languages(first: ${maxLanguagesOneRepo}, orderBy: {field: SIZE, direction: DESC}) {
+                                    totalSize
+                                    edges {
+                                        size
+                                        node {
+                                            name
+                                            color
+                                        }
+                                    }
                                 }
                             }
                             contributions {
