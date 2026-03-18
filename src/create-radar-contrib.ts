@@ -1,20 +1,13 @@
 import * as d3 from 'd3';
+import {
+    buildRadarRangeLabels,
+    RADAR_LEVELS,
+    toRadarLevel,
+} from './radar-scale-utils';
 import * as util from './utils';
 import * as type from './type';
 
-const rangeLabels: ReadonlyArray<string> = ['1', '3', '10', '30', '100'];
-const levels = rangeLabels.length;
 const radians = 2 * Math.PI;
-const maxRadarValue = Number(rangeLabels[rangeLabels.length - 1]);
-const maxRadarLog = Math.log10(maxRadarValue);
-
-const toLevel = (value: number): number => {
-    if (value < 1) {
-        return 0.8;
-    }
-    const result = (Math.log10(value) / maxRadarLog) * (levels - 1);
-    return Math.min(result, levels - 1) + 1;
-};
 
 export const createRadarContrib = (
     svg: d3.Selection<SVGSVGElement, unknown, null, unknown>,
@@ -37,6 +30,7 @@ export const createRadarContrib = (
     const pullReqLabel = settings.l10n ? settings.l10n.pullreq : 'PullReq';
     const reviewLabel = settings.l10n ? settings.l10n.review : 'Review';
     const repoLabel = settings.l10n ? settings.l10n.repo : 'Repo';
+    const rangeLabels = buildRadarRangeLabels(userInfo.totalContributions);
 
     const data = [
         {
@@ -63,11 +57,15 @@ export const createRadarContrib = (
     const total = data.length;
     const posX = (level: number, num: number) =>
         util.toFixed(
-            radius * (level / levels) * Math.sin((num / total) * radians),
+            radius *
+                (level / RADAR_LEVELS) *
+                Math.sin((num / total) * radians),
         );
     const posY = (level: number, num: number) =>
         util.toFixed(
-            radius * (level / levels) * -Math.cos((num / total) * radians),
+            radius *
+                (level / RADAR_LEVELS) *
+                -Math.cos((num / total) * radians),
         );
 
     const group = svg
@@ -77,7 +75,7 @@ export const createRadarContrib = (
             `translate(${util.toFixed(x + cx)}, ${util.toFixed(y + cy)})`,
         );
 
-    for (let j = 0; j < levels; j++) {
+    for (let j = 0; j < RADAR_LEVELS; j++) {
         group
             .selectAll(null)
             .data(data)
@@ -102,7 +100,10 @@ export const createRadarContrib = (
         .attr('text-anchor', 'start')
         .attr('dominant-baseline', 'auto')
         .attr('x', util.toFixed(radius / 50))
-        .attr('y', (d, i) => util.toFixed(-radius * ((i + 1) / levels)))
+        .attr(
+            'y',
+            (d, i) => util.toFixed(-radius * ((i + 1) / RADAR_LEVELS)),
+        )
         .attr('class', 'fill-weak');
 
     const axis = group
@@ -115,8 +116,8 @@ export const createRadarContrib = (
     axis.append('line')
         .attr('x1', (d, i) => posX(1, i))
         .attr('y1', (d, i) => posY(1, i))
-        .attr('x2', (d, i) => posX(levels, i))
-        .attr('y2', (d, i) => posY(levels, i))
+        .attr('x2', (d, i) => posX(RADAR_LEVELS, i))
+        .attr('y2', (d, i) => posY(RADAR_LEVELS, i))
         .attr('class', 'stroke-weak')
         .style('stroke-dasharray', '4 4')
         .style('stroke-width', '1px');
@@ -126,14 +127,14 @@ export const createRadarContrib = (
         .style('font-size', `${util.toFixed(radius / 7.5)}px`)
         .attr('text-anchor', 'middle')
         .attr('dominant-baseline', 'middle')
-        .attr('x', (d, i) => posX(1.25 * levels, i))
-        .attr('y', (d, i) => posY(1.17 * levels, i))
+        .attr('x', (d, i) => posX(1.25 * RADAR_LEVELS, i))
+        .attr('y', (d, i) => posY(1.17 * RADAR_LEVELS, i))
         .attr('class', 'fill-fg')
         .append('title')
         .text((d) => d.value);
 
     const points = data
-        .map((d) => toLevel(d.value))
+        .map((d) => toRadarLevel(d.value, userInfo.totalContributions))
         .map((level, i) => `${posX(level, i)},${posY(level, i)}`)
         .join(' ');
 
@@ -142,7 +143,7 @@ export const createRadarContrib = (
         .attr('class', 'radar')
         .attr('points', points);
     if (isAnimate) {
-        const level0 = toLevel(0);
+        const level0 = toRadarLevel(0, userInfo.totalContributions);
         const points0 = data
             .map((d, i) => `${posX(level0, i)},${posY(level0, i)}`)
             .join(' ');
