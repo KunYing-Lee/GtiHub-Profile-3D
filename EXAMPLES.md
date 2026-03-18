@@ -6,12 +6,13 @@ This alternative workflow generates two files, `day.svg` and `night.svg`, and pu
 
 Create a repository on GitHub with the same name as your user name.
 
-* e.g. If the user name is `octocat`, create a repository named `octocat/octocat`.
-* ref. [Managing your profile README](https://docs.github.com/en/github/setting-up-and-managing-your-github-profile/managing-your-profile-readme)
+- e.g. If the user name is `octocat`, create a repository named `octocat/octocat`.
+- ref. [Managing your profile README](https://docs.github.com/en/github/setting-up-and-managing-your-github-profile/managing-your-profile-readme)
 
 In this repository, do the following.
 
 ### 2. Create `conf/github-profile-3d-contrib.json` file in your <username> repo:
+
 ```json:conf/github-profile-3d-contrib.json
 [
     {
@@ -55,17 +56,18 @@ In this repository, do the following.
 ```
 
 ### 3. Create `.github/workflows/profile-3d-contrib.yml` workflow file in your <username> repo:
+
 ```yaml:.github/workflows/profile-3d-contrib.yml
 name: generate 3d chart for profile contributions
 
 on:
   # run automatically every 24 hours
   schedule:
-    - cron: "0 */24 * * *" 
-  
+    - cron: "0 */24 * * *"
+
   # allows to manually run the job at any time
   workflow_dispatch:
-  
+
   # run on every push on the main branch
   # don't forget to change if you're using 'master' branch
   push:
@@ -83,7 +85,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           USERNAME: ${{ github.repository_owner }}
           SETTING_JSON: conf/github-profile-3d-contrib.json
-          
+
       # push the content of <build_dir> to a branch
       # the content will be available at https://raw.githubusercontent.com/<github_user>/<repository>/<target_branch>/<file> , or as github page
       - name: push SVGs to the output-3d branch
@@ -96,13 +98,43 @@ jobs:
 ```
 
 ### 4. Edit `README.md` in your <username> repo, adding the following code:
+
 Do not forget to replace `<github_user>` and `<repository>` with your GitHub username.
+
 ```html
-<p align="center" >
-	<picture>
-	  <source media="(prefers-color-scheme: dark)"  srcset="https://raw.githubusercontent.com/<github_user>/<repository>/output-3d-contrib/night.svg" />
-	  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/<github_user>/<repository>/output-3d-contrib/day.svg" />
-	  <img alt="github profile contributions chart"    src="https://raw.githubusercontent.com/<github_user>/<repository>/output-3d-contrib/day.svg" />
-	</picture>
+<p align="center">
+    <picture>
+        <source
+            media="(prefers-color-scheme: dark)"
+            srcset="
+                https://raw.githubusercontent.com/<github_user>/<repository>/output-3d-contrib/night.svg
+            "
+        />
+        <source
+            media="(prefers-color-scheme: light)"
+            srcset="
+                https://raw.githubusercontent.com/<github_user>/<repository>/output-3d-contrib/day.svg
+            "
+        />
+        <img
+            alt="github profile contributions chart"
+            src="https://raw.githubusercontent.com/<github_user>/<repository>/output-3d-contrib/day.svg"
+        />
+    </picture>
 </p>
 ```
+
+## Advanced example 2: snake animation that clears the 3D blocks
+
+If you want a snake-like sweep inspired by contribution snake animations, use [`sample-settings/snake.json`](./sample-settings/snake.json) as your `SETTING_JSON`.
+
+The `snakeAnimation` block is optional and currently supports:
+
+- `enabled`: turn the snake animation on.
+- `duration`: how long the snake takes to complete one loop.
+- `startDelay`: optional delay before the snake starts. When omitted, animated builds wait for the 3D growth animation to finish.
+- `eatDuration`: how quickly each bar collapses after the snake reaches it.
+- `segmentCount`: how many body segments the snake has.
+- `segmentGap`: how many grid steps to leave between segments.
+- `segmentScale`: how large the body is relative to a contribution tile.
+- `headColor`, `bodyColor`, `eyeColor`, `shadowColor`: snake colors for the current theme.

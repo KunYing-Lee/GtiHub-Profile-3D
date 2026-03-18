@@ -4,6 +4,7 @@ import * as type from './type';
 const DARKER_RIGHT = 1;
 const DARKER_LEFT = 0.5;
 const DARKER_TOP = 0;
+const DEFAULT_SNAKE_SHADOW = 'rgba(0, 0, 0, 0.18)';
 
 const createColors = (settings: type.Settings): string => {
     const cssColors: string[] = [];
@@ -37,6 +38,33 @@ const createColors = (settings: type.Settings): string => {
             `fill-opacity: 0.5;`,
             '}',
         );
+
+        if (
+            settings.type == 'normal' ||
+            settings.type == 'season' ||
+            settings.type == 'rainbow' ||
+            settings.type == 'bitmap'
+        ) {
+            if (settings.snakeAnimation?.enabled) {
+                cssColors.push(
+                    `.snake-head { fill: ${
+                        settings.snakeAnimation.headColor ||
+                        settings.strongColor
+                    }; }`,
+                    `.snake-body { fill: ${
+                        settings.snakeAnimation.bodyColor || settings.radarColor
+                    }; }`,
+                    `.snake-eye { fill: ${
+                        settings.snakeAnimation.eyeColor ||
+                        settings.backgroundColor
+                    }; }`,
+                    `.snake-shadow { fill: ${
+                        settings.snakeAnimation.shadowColor ||
+                        DEFAULT_SNAKE_SHADOW
+                    }; }`,
+                );
+            }
+        }
     }
 
     if (settings.type == 'normal') {

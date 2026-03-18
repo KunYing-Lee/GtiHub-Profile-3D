@@ -59,6 +59,21 @@ export interface PieLangSettings {
     fileName?: string;
 }
 
+export interface SnakeAnimationSettings {
+    enabled?: boolean;
+    duration?: string;
+    startDelay?: string;
+    repeatCount?: string;
+    eatDuration?: string;
+    segmentCount?: number;
+    segmentGap?: number;
+    segmentScale?: number;
+    headColor?: string;
+    bodyColor?: string;
+    eyeColor?: string;
+    shadowColor?: string;
+}
+
 export interface BaseSettings extends RadarContribSettings, PieLangSettings {
     backgroundColor: string;
     foregroundColor: string;
@@ -78,6 +93,8 @@ export interface BaseSettings extends RadarContribSettings, PieLangSettings {
         issue: string;
         contrib: string;
     };
+
+    snakeAnimation?: SnakeAnimationSettings;
 }
 
 export interface NormalColorSettings extends BaseSettings {
