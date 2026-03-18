@@ -2,16 +2,18 @@ import * as d3 from 'd3';
 import * as util from './utils';
 import * as type from './type';
 
-const rangeLabels: ReadonlyArray<string> = ['1', '10', '100', '1K', '10K'];
+const rangeLabels: ReadonlyArray<string> = ['1', '3', '10', '30', '100'];
 const levels = rangeLabels.length;
 const radians = 2 * Math.PI;
+const maxRadarValue = Number(rangeLabels[rangeLabels.length - 1]);
+const maxRadarLog = Math.log10(maxRadarValue);
 
 const toLevel = (value: number): number => {
     if (value < 1) {
         return 0.8;
     }
-    const result = Math.log10(value);
-    return Math.min(result, 5) + 1;
+    const result = (Math.log10(value) / maxRadarLog) * (levels - 1);
+    return Math.min(result, levels - 1) + 1;
 };
 
 export const createRadarContrib = (
