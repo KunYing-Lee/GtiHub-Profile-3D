@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import { JSDOM } from 'jsdom';
 import * as contrib from './create-3d-contrib';
+import * as panes from './create-info-panes';
 import * as pie from './create-pie-language';
 import * as radar from './create-radar-contrib';
 import * as colors from './create-css-colors';
@@ -96,6 +97,8 @@ export const createSvg = (
             settings,
             isForcedAnimation,
         );
+
+        panes.createInfoPanes(svg, settings.infoPanes);
 
         if (settings.chartLayout === 'contrib_only') {
             return container.html();

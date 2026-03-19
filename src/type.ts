@@ -77,6 +77,17 @@ export interface SnakeAnimationSettings {
     shadowColor?: string;
 }
 
+export interface InfoPaneSettings {
+    title: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    header?: string;
+    subtitle?: string;
+    body: string;
+}
+
 export interface BaseSettings extends RadarContribSettings, PieLangSettings {
     backgroundColor: string;
     foregroundColor: string;
@@ -99,6 +110,7 @@ export interface BaseSettings extends RadarContribSettings, PieLangSettings {
     };
 
     snakeAnimation?: SnakeAnimationSettings;
+    infoPanes?: InfoPaneSettings[];
 }
 
 export interface NormalColorSettings extends BaseSettings {
