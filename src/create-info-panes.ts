@@ -165,7 +165,7 @@ const renderPane = (
         .attr('y', util.toFixed(23))
         .attr('fill', '#5e6673')
         .style('font-family', MONO_FONT_FAMILY)
-        .style('font-size', '14px')
+        .style('font-size', '15px')
         .style('font-weight', '700')
         .style('letter-spacing', '0.08em')
         .text(pane.title);
@@ -178,8 +178,8 @@ const renderPane = (
             group,
             PADDING_X,
             cursorY,
-            28,
-            34,
+            32,
+            38,
             pane.header,
             textWidth,
             800,
@@ -193,8 +193,8 @@ const renderPane = (
             group,
             PADDING_X,
             cursorY,
-            16,
-            22,
+            18,
+            24,
             pane.subtitle,
             textWidth,
             500,
@@ -207,8 +207,8 @@ const renderPane = (
         group,
         PADDING_X,
         cursorY,
-        17,
-        28,
+        18,
+        30,
         pane.body,
         textWidth,
         500,

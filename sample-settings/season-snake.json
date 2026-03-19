@@ -10,21 +10,21 @@
   "infoPanes": [
     {
       "title": "PROFILE.MD",
-      "x": 664,
-      "y": 56,
-      "width": 494,
-      "height": 248,
+      "x": 540,
+      "y": 48,
+      "width": 560,
+      "height": 286,
       "header": "Kun-Ying (Aaron) Lee",
       "subtitle": "CS Undergrad @ Tsinghua Univ. | From Taiwan",
-      "body": "My research interests lie broadly in Robotics and Embodied AI. I am a member of the TH-MOS (Tsinghua Master of Soccer) robot soccer team, working on Gait Control algorithms."
+      "body": "My research interests lie broadly in Robotics and Embodied AI.\nI am a member of the TH-MOS (Tsinghua Master of Soccer) robot soccer team, working on Gait Control algorithms."
     },
     {
       "title": "INTERESTS.MD",
-      "x": 64,
-      "y": 600,
-      "width": 474,
-      "height": 170,
-      "body": "Outside of research, I am a passionate pianist and a member of the Tsinghua University Clavier Team. I also enjoy playing frisbee with the CS department team."
+      "x": 56,
+      "y": 602,
+      "width": 540,
+      "height": 188,
+      "body": "I am a passionate pianist and a member of the Tsinghua University Clavier Team. I also enjoy playing frisbee with the CS department team."
     }
   ],
   "growingAnimation": true,
