@@ -10,66 +10,179 @@ const CONTENT_GAP = 18;
 const MONO_FONT_FAMILY =
     '"SFMono-Regular", "Cascadia Mono", "IBM Plex Mono", "Liberation Mono", Menlo, Consolas, monospace';
 
+interface InlineTextSegment {
+    text: string;
+    weight: number | string;
+}
+
+const getBoldWeight = (weight: number | string): number | string => {
+    if (typeof weight === 'number') {
+        return Math.min(weight + 300, 900);
+    }
+
+    return '700';
+};
+
+const parseInlineSegments = (
+    text: string,
+    baseWeight: number | string,
+): InlineTextSegment[] => {
+    const segments: InlineTextSegment[] = [];
+    const matcher = /\*\*(.+?)\*\*/g;
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = matcher.exec(text)) !== null) {
+        if (lastIndex < match.index) {
+            segments.push({
+                text: text.slice(lastIndex, match.index),
+                weight: baseWeight,
+            });
+        }
+
+        segments.push({
+            text: match[1],
+            weight: getBoldWeight(baseWeight),
+        });
+        lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < text.length) {
+        segments.push({
+            text: text.slice(lastIndex),
+            weight: baseWeight,
+        });
+    }
+
+    return segments.filter((segment) => 0 < segment.text.length);
+};
+
+const mergeSegments = (
+    segments: InlineTextSegment[],
+): InlineTextSegment[] =>
+    segments.reduce((merged: InlineTextSegment[], segment) => {
+        const last = merged[merged.length - 1];
+        if (last && last.weight === segment.weight) {
+            last.text += segment.text;
+            return merged;
+        }
+
+        merged.push({ ...segment });
+        return merged;
+    }, []);
+
+const trimTrailingWhitespace = (
+    segments: InlineTextSegment[],
+): InlineTextSegment[] => {
+    const trimmed = segments.map((segment) => ({ ...segment }));
+
+    while (0 < trimmed.length) {
+        const last = trimmed[trimmed.length - 1];
+        const nextText = last.text.replace(/\s+$/, '');
+        if (0 < nextText.length) {
+            last.text = nextText;
+            break;
+        }
+        trimmed.pop();
+    }
+
+    return trimmed;
+};
+
+const wrapInlineSegments = (
+    segments: InlineTextSegment[],
+    maxChars: number,
+): InlineTextSegment[][] => {
+    const lines: InlineTextSegment[][] = [];
+    let currentLine: InlineTextSegment[] = [];
+    let currentLength = 0;
+
+    const pushToken = (token: InlineTextSegment): void => {
+        currentLine.push(token);
+        currentLength += token.text.length;
+    };
+
+    const flushLine = (): void => {
+        const trimmed = trimTrailingWhitespace(currentLine);
+        if (0 < trimmed.length) {
+            lines.push(mergeSegments(trimmed));
+        }
+        currentLine = [];
+        currentLength = 0;
+    };
+
+    segments
+        .flatMap((segment) =>
+            (segment.text.match(/\s+|\S+/g) ?? []).map((tokenText) => ({
+                text: tokenText,
+                weight: segment.weight,
+            })),
+        )
+        .forEach((token) => {
+            const isWhitespace = /^\s+$/.test(token.text);
+            if (isWhitespace) {
+                if (
+                    0 < currentLength &&
+                    currentLength + token.text.length <= maxChars
+                ) {
+                    pushToken(token);
+                }
+                return;
+            }
+
+            let remainder = token.text;
+            while (0 < remainder.length) {
+                if (currentLength === 0 && maxChars < remainder.length) {
+                    pushToken({
+                        text: remainder.slice(0, maxChars),
+                        weight: token.weight,
+                    });
+                    remainder = remainder.slice(maxChars);
+                    flushLine();
+                    continue;
+                }
+
+                if (currentLength + remainder.length <= maxChars) {
+                    pushToken({
+                        text: remainder,
+                        weight: token.weight,
+                    });
+                    remainder = '';
+                    continue;
+                }
+
+                if (0 < currentLength) {
+                    flushLine();
+                    continue;
+                }
+
+                pushToken({
+                    text: remainder.slice(0, maxChars),
+                    weight: token.weight,
+                });
+                remainder = remainder.slice(maxChars);
+                flushLine();
+            }
+        });
+
+    flushLine();
+
+    return 0 < lines.length ? lines : [[{ text: '', weight: segments[0]?.weight ?? '500' }]];
+};
+
 const wrapMonospaceText = (
     text: string,
     width: number,
     fontSize: number,
+    weight: number | string,
     wrapWidthRatio = 0.62,
-): string[] => {
+): InlineTextSegment[][] => {
     const maxChars = Math.max(1, Math.floor(width / (fontSize * wrapWidthRatio)));
 
-    const wrapSingleLine = (line: string): string[] => {
-        if (line.length <= maxChars) {
-            return [line];
-        }
-
-        const words = line.split(/\s+/).filter((word) => 0 < word.length);
-        const lines: string[] = [];
-        let current = '';
-
-        words.forEach((word) => {
-            if (current.length === 0) {
-                if (word.length <= maxChars) {
-                    current = word;
-                    return;
-                }
-
-                for (let index = 0; index < word.length; index += maxChars) {
-                    lines.push(word.slice(index, index + maxChars));
-                }
-                return;
-            }
-
-            const next = `${current} ${word}`;
-            if (next.length <= maxChars) {
-                current = next;
-                return;
-            }
-
-            lines.push(current);
-            if (word.length <= maxChars) {
-                current = word;
-                return;
-            }
-
-            for (let index = 0; index < word.length; index += maxChars) {
-                const chunk = word.slice(index, index + maxChars);
-                if (chunk.length === maxChars) {
-                    lines.push(chunk);
-                } else {
-                    current = chunk;
-                }
-            }
-        });
-
-        if (0 < current.length) {
-            lines.push(current);
-        }
-
-        return lines;
-    };
-
-    return text.split('\n').flatMap((line) => wrapSingleLine(line));
+    return text.split('\n').flatMap((line) => {
+        const segments = parseInlineSegments(line, weight);
+        return wrapInlineSegments(segments, maxChars);
+    });
 };
 
 const addTextLines = (
@@ -85,7 +198,13 @@ const addTextLines = (
     align: 'left' | 'center' = 'left',
     wrapWidthRatio = 0.62,
 ): number => {
-    const lines = wrapMonospaceText(text, width, fontSize, wrapWidthRatio);
+    const lines = wrapMonospaceText(
+        text,
+        width,
+        fontSize,
+        weight,
+        wrapWidthRatio,
+    );
     const textX = align === 'center' ? x + width / 2 : x;
     const textNode = group
         .append('text')
@@ -98,11 +217,17 @@ const addTextLines = (
         .style('font-weight', `${weight}`);
 
     lines.forEach((line, index) => {
-        textNode
+        const lineNode = textNode
             .append('tspan')
             .attr('x', util.toFixed(textX))
-            .attr('dy', index === 0 ? '0' : `${lineHeight}px`)
-            .text(line);
+            .attr('dy', index === 0 ? '0' : `${lineHeight}px`);
+
+        line.forEach((segment) => {
+            lineNode
+                .append('tspan')
+                .style('font-weight', `${segment.weight}`)
+                .text(segment.text);
+        });
     });
 
     return y + Math.max(lines.length, 1) * lineHeight;
