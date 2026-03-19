@@ -92,6 +92,7 @@ export interface InfoPaneSettings {
     headerLineHeight?: number;
     headerGap?: number;
     subtitle?: string;
+    subtitleAlign?: 'left' | 'center';
     subtitleFontSize?: number;
     subtitleLineHeight?: number;
     subtitleGap?: number;
@@ -99,6 +100,7 @@ export interface InfoPaneSettings {
     bodyAlign?: 'left' | 'center';
     bodyFontSize?: number;
     bodyLineHeight?: number;
+    bodyWrapWidthRatio?: number;
 }
 
 export interface BaseSettings extends RadarContribSettings, PieLangSettings {

@@ -14,8 +14,9 @@ const wrapMonospaceText = (
     text: string,
     width: number,
     fontSize: number,
+    wrapWidthRatio = 0.62,
 ): string[] => {
-    const maxChars = Math.max(1, Math.floor(width / (fontSize * 0.62)));
+    const maxChars = Math.max(1, Math.floor(width / (fontSize * wrapWidthRatio)));
 
     const wrapSingleLine = (line: string): string[] => {
         if (line.length <= maxChars) {
@@ -82,8 +83,9 @@ const addTextLines = (
     weight: number | string,
     color: string,
     align: 'left' | 'center' = 'left',
+    wrapWidthRatio = 0.62,
 ): number => {
-    const lines = wrapMonospaceText(text, width, fontSize);
+    const lines = wrapMonospaceText(text, width, fontSize, wrapWidthRatio);
     const textX = align === 'center' ? x + width / 2 : x;
     const textNode = group
         .append('text')
@@ -206,7 +208,7 @@ const renderPane = (
             textWidth,
             500,
             '#596273',
-            'left',
+            pane.subtitleAlign ?? 'left',
         );
         cursorY += pane.subtitleGap ?? CONTENT_GAP;
     }
@@ -222,6 +224,7 @@ const renderPane = (
         500,
         '#232831',
         pane.bodyAlign ?? 'left',
+        pane.bodyWrapWidthRatio,
     );
 };
 

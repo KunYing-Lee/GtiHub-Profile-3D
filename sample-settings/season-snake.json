@@ -21,14 +21,16 @@
       "headerAlign": "center",
       "headerFontSize": 40,
       "headerLineHeight": 46,
-      "headerGap": 18,
-      "subtitle": "CS Undergrad @ Tsinghua Univ. | From Taiwan",
-      "subtitleFontSize": 20,
-      "subtitleLineHeight": 28,
-      "subtitleGap": 22,
-      "bodyFontSize": 20,
+      "headerGap": 15,
+      "subtitle": "Taiwanese CS Undergrad @ Tsinghua Univ.",
+      "subtitleAlign": "center",
+      "subtitleFontSize": 24,
+      "subtitleLineHeight": 30,
+      "subtitleGap": 15,
+      "bodyFontSize": 24,
       "bodyLineHeight": 34,
-      "body": "My research interests lie broadly in Robotics and Embodied AI.\nI am a member of the TH-MOS (Tsinghua Master of Soccer) robot soccer team, working on Gait Control algorithms."
+      "bodyWrapWidthRatio": 0.53,
+      "body": "My research interests lie broadly in Robotics.\nI am a member of the TH-MOS (Tsinghua Master of Soccer) robot soccer team, working on Gait Control algorithms."
     },
     {
       "title": "INTERESTS.MD",
