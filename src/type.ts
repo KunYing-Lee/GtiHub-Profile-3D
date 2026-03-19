@@ -77,6 +77,15 @@ export interface SnakeAnimationSettings {
     shadowColor?: string;
 }
 
+export interface PaneTypingAnimationSettings {
+    enabled?: boolean;
+    startDelay?: number;
+    charDuration?: number;
+    linePause?: number;
+    cursorColor?: string;
+    cursorWidth?: number;
+}
+
 export interface InfoPaneSettings {
     title: string;
     x: number;
@@ -101,6 +110,7 @@ export interface InfoPaneSettings {
     bodyFontSize?: number;
     bodyLineHeight?: number;
     bodyWrapWidthRatio?: number;
+    typingAnimation?: PaneTypingAnimationSettings;
 }
 
 export interface BaseSettings extends RadarContribSettings, PieLangSettings {

@@ -15,6 +15,10 @@ interface InlineTextSegment {
     weight: number | string;
 }
 
+type IdGenerator = (prefix: string) => string;
+
+const DEFAULT_CHAR_RENDER_RATIO = 0.56;
+
 const getBoldWeight = (weight: number | string): number | string => {
     if (typeof weight === 'number') {
         return Math.min(weight + 300, 900);
@@ -185,26 +189,20 @@ const wrapMonospaceText = (
     });
 };
 
-const addTextLines = (
+const getLineText = (line: InlineTextSegment[]): string =>
+    line.map((segment) => segment.text).join('');
+
+const createTextLine = (
     group: d3.Selection<SVGGElement, unknown, null, unknown>,
     x: number,
     y: number,
     fontSize: number,
-    lineHeight: number,
-    text: string,
-    width: number,
+    line: InlineTextSegment[],
     weight: number | string,
     color: string,
-    align: 'left' | 'center' = 'left',
-    wrapWidthRatio = 0.62,
-): number => {
-    const lines = wrapMonospaceText(
-        text,
-        width,
-        fontSize,
-        weight,
-        wrapWidthRatio,
-    );
+    align: 'left' | 'center',
+    width: number,
+): d3.Selection<SVGTextElement, unknown, null, unknown> => {
     const textX = align === 'center' ? x + width / 2 : x;
     const textNode = group
         .append('text')
@@ -216,18 +214,174 @@ const addTextLines = (
         .style('font-size', `${fontSize}px`)
         .style('font-weight', `${weight}`);
 
-    lines.forEach((line, index) => {
-        const lineNode = textNode
+    const lineNode = textNode.append('tspan').attr('x', util.toFixed(textX));
+    line.forEach((segment) => {
+        lineNode
             .append('tspan')
-            .attr('x', util.toFixed(textX))
-            .attr('dy', index === 0 ? '0' : `${lineHeight}px`);
+            .style('font-weight', `${segment.weight}`)
+            .text(segment.text);
+    });
 
-        line.forEach((segment) => {
-            lineNode
-                .append('tspan')
-                .style('font-weight', `${segment.weight}`)
-                .text(segment.text);
-        });
+    return textNode;
+};
+
+const addTypingTextLines = (
+    svg: d3.Selection<SVGSVGElement, unknown, null, unknown>,
+    group: d3.Selection<SVGGElement, unknown, null, unknown>,
+    nextId: IdGenerator,
+    x: number,
+    y: number,
+    fontSize: number,
+    lineHeight: number,
+    lines: InlineTextSegment[][],
+    width: number,
+    weight: number | string,
+    color: string,
+    align: 'left' | 'center',
+    typingAnimation: type.PaneTypingAnimationSettings,
+): number => {
+    let defs = svg.select<SVGDefsElement>('defs');
+    if (defs.empty()) {
+        defs = svg.append('defs');
+    }
+
+    const startDelay = typingAnimation.startDelay ?? 0;
+    const charDuration = typingAnimation.charDuration ?? 0.045;
+    const linePause = typingAnimation.linePause ?? 0.24;
+    const cursorColor = typingAnimation.cursorColor ?? color;
+    const cursorWidth = typingAnimation.cursorWidth ?? 2;
+
+    const lineLeft = x;
+    let elapsed = startDelay;
+
+    lines.forEach((line, index) => {
+        const lineText = getLineText(line);
+        const lineY = y + index * lineHeight;
+        const lineWidth = Math.min(
+            width,
+            Math.max(
+                fontSize * 0.8,
+                lineText.length * fontSize * DEFAULT_CHAR_RENDER_RATIO,
+            ),
+        );
+        const typingDuration = Math.max(0.24, lineText.length * charDuration);
+        const clipId = nextId('pane-typing-clip');
+        const clipY = lineY - fontSize * 0.92;
+        const clipHeight = Math.max(lineHeight, fontSize * 1.3);
+
+        defs.append('clipPath').attr('id', clipId).append('rect')
+            .attr('x', util.toFixed(lineLeft))
+            .attr('y', util.toFixed(clipY))
+            .attr('width', 0)
+            .attr('height', util.toFixed(clipHeight))
+            .append('animate')
+            .attr('attributeName', 'width')
+            .attr('values', `0;${util.toFixed(lineWidth)}`)
+            .attr('dur', `${util.toFixed(typingDuration)}s`)
+            .attr('begin', `${util.toFixed(elapsed)}s`)
+            .attr('fill', 'freeze');
+
+        createTextLine(
+            group,
+            x,
+            lineY,
+            fontSize,
+            line,
+            weight,
+            color,
+            align,
+            width,
+        ).attr('clip-path', `url(#${clipId})`);
+
+        const cursor = group
+            .append('rect')
+            .attr('x', util.toFixed(lineLeft))
+            .attr('y', util.toFixed(clipY))
+            .attr('width', util.toFixed(cursorWidth))
+            .attr('height', util.toFixed(clipHeight))
+            .attr('fill', cursorColor)
+            .attr('opacity', 0);
+
+        cursor
+            .append('animate')
+            .attr('attributeName', 'x')
+            .attr(
+                'values',
+                `${util.toFixed(lineLeft)};${util.toFixed(lineLeft + lineWidth)}`,
+            )
+            .attr('dur', `${util.toFixed(typingDuration)}s`)
+            .attr('begin', `${util.toFixed(elapsed)}s`)
+            .attr('fill', 'freeze');
+
+        cursor
+            .append('animate')
+            .attr('attributeName', 'opacity')
+            .attr('values', '0;1;1;0')
+            .attr('keyTimes', '0;0.02;0.92;1')
+            .attr('dur', `${util.toFixed(typingDuration)}s`)
+            .attr('begin', `${util.toFixed(elapsed)}s`)
+            .attr('fill', 'freeze');
+
+        elapsed += typingDuration + linePause;
+    });
+
+    return y + Math.max(lines.length, 1) * lineHeight;
+};
+
+const addTextLines = (
+    svg: d3.Selection<SVGSVGElement, unknown, null, unknown>,
+    group: d3.Selection<SVGGElement, unknown, null, unknown>,
+    nextId: IdGenerator,
+    x: number,
+    y: number,
+    fontSize: number,
+    lineHeight: number,
+    text: string,
+    width: number,
+    weight: number | string,
+    color: string,
+    align: 'left' | 'center' = 'left',
+    wrapWidthRatio = 0.62,
+    typingAnimation?: type.PaneTypingAnimationSettings,
+): number => {
+    const lines = wrapMonospaceText(
+        text,
+        width,
+        fontSize,
+        weight,
+        wrapWidthRatio,
+    );
+
+    if (typingAnimation?.enabled) {
+        return addTypingTextLines(
+            svg,
+            group,
+            nextId,
+            x,
+            y,
+            fontSize,
+            lineHeight,
+            lines,
+            width,
+            weight,
+            color,
+            align,
+            typingAnimation,
+        );
+    }
+
+    lines.forEach((line, index) => {
+        createTextLine(
+            group,
+            x,
+            y + index * lineHeight,
+            fontSize,
+            line,
+            weight,
+            color,
+            align,
+            width,
+        );
     });
 
     return y + Math.max(lines.length, 1) * lineHeight;
@@ -236,6 +390,7 @@ const addTextLines = (
 const renderPane = (
     svg: d3.Selection<SVGSVGElement, unknown, null, unknown>,
     pane: type.InfoPaneSettings,
+    nextId: IdGenerator,
 ): void => {
     const group = svg
         .append('g')
@@ -308,7 +463,9 @@ const renderPane = (
 
     if (pane.header) {
         cursorY = addTextLines(
+            svg,
             group,
+            nextId,
             paddingX,
             cursorY,
             pane.headerFontSize ?? 32,
@@ -324,7 +481,9 @@ const renderPane = (
 
     if (pane.subtitle) {
         cursorY = addTextLines(
+            svg,
             group,
+            nextId,
             paddingX,
             cursorY,
             pane.subtitleFontSize ?? 18,
@@ -339,7 +498,9 @@ const renderPane = (
     }
 
     addTextLines(
+        svg,
         group,
+        nextId,
         paddingX,
         cursorY,
         pane.bodyFontSize ?? 18,
@@ -350,6 +511,7 @@ const renderPane = (
         '#232831',
         pane.bodyAlign ?? 'left',
         pane.bodyWrapWidthRatio,
+        pane.typingAnimation,
     );
 };
 
@@ -357,7 +519,11 @@ export const createInfoPanes = (
     svg: d3.Selection<SVGSVGElement, unknown, null, unknown>,
     panes: type.InfoPaneSettings[] | undefined,
 ): void => {
+    let idIndex = 0;
+    const nextId: IdGenerator = (prefix: string): string =>
+        `${prefix}-${idIndex++}`;
+
     panes?.forEach((pane) => {
-        renderPane(svg, pane);
+        renderPane(svg, pane, nextId);
     });
 };
