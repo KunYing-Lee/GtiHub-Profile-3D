@@ -10,7 +10,7 @@
   "infoPanes": [
     {
       "title": "PROFILE.MD",
-      "x": 500,
+      "x": 580,
       "y": 40,
       "width": 650,
       "height": 326,
@@ -34,7 +34,7 @@
       "title": "INTERESTS.MD",
       "x": 48,
       "y": 592,
-      "width": 620,
+      "width": 550,
       "height": 222,
       "paddingX": 32,
       "paddingY": 28,
