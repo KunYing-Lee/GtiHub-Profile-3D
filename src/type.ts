@@ -83,9 +83,22 @@ export interface InfoPaneSettings {
     y: number;
     width: number;
     height: number;
+    paddingX?: number;
+    paddingY?: number;
+    titleFontSize?: number;
     header?: string;
+    headerAlign?: 'left' | 'center';
+    headerFontSize?: number;
+    headerLineHeight?: number;
+    headerGap?: number;
     subtitle?: string;
+    subtitleFontSize?: number;
+    subtitleLineHeight?: number;
+    subtitleGap?: number;
     body: string;
+    bodyAlign?: 'left' | 'center';
+    bodyFontSize?: number;
+    bodyLineHeight?: number;
 }
 
 export interface BaseSettings extends RadarContribSettings, PieLangSettings {
